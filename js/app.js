@@ -91,6 +91,27 @@ class UI {
     actualizarRestante(restante) {
         document.querySelector('#restante').textContent = restante;
     };
+
+    comprobarPresupuesto(presupuestObj) {
+        const { presupuesto, restante } = presupuestObj;
+
+        const restanteDiv = document.querySelector('.restante');
+
+        //~ Comprobar 25%
+        if ((presupuesto / 4) > restante) {
+            restanteDiv.classList.remove('alert-success', 'alert-warning');
+            restanteDiv.classList.add('alert-danger');
+        } else if ((presupuesto / 2) > restante) { //~ Comprobar 50%
+            restanteDiv.classList.remove('alert-success');
+            restanteDiv.classList.add('alert-warning');
+        };
+
+        //~ Si el total es 0 o menor
+        if(restante <= 0 ){
+            ui.imprimirAlerta('El presupuesto se ha agotado.', 'error');
+            formulario.querySelector('button[type="submit"]').disabled = true;
+        };
+    };
 };
 
 //! Instanciar
@@ -105,22 +126,18 @@ function preguntarPresupuesto() {
     if (presupuestoUsuario === '' || presupuestoUsuario === null || isNaN(presupuestoUsuario) || presupuestoUsuario <= 0) {
         window.location.reload();
     };
-
     //~ Presupuesto valido
     presupuesto = new Presupuesto(presupuestoUsuario);
     console.log(presupuesto);
-
     ui.insertarPresupuesto(presupuesto);
 };
 
 //* Añade gastos
 function agregarGasto(e) {
     e.preventDefault();
-
     //~ Leer los datos del formulario
     const nombre = document.querySelector('#gasto').value;
     const cantidad = Number(document.querySelector('#cantidad').value);
-
     //~ Validar
     if (nombre === '' || cantidad === '') {
         ui.imprimirAlerta('Ambos campos son obligatorios', 'error');
@@ -129,24 +146,19 @@ function agregarGasto(e) {
         ui.imprimirAlerta('Cantidad no válida', 'error');
         return;
     };
-
     //~ Generar un objeto con el gasto
     const gasto = { nombre, cantidad, id: Date.now() };
-
     //~ Añade un nuevo gasto
     presupuesto.nuevoGasto(gasto);
-
     //~ Mensaje de todo bien!!!
     ui.imprimirAlerta('Gasto agregado correctamente');
-
     //~ Imprimir los gastos
     const { gastos, restante } = presupuesto;
     ui.agregarGastoListado(gastos);
     ui.actualizarRestante(restante);
-
+    ui.comprobarPresupuesto(presupuesto);
     //~ Reinicia el formulario
     formulario.reset();
-
 };
 
 
